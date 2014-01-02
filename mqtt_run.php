@@ -55,21 +55,25 @@
 
     $mysqli = new mysqli($server,$username,$password,$database);
 
-    require("../user/user_model.php");
-    $user = new User($mysqli,null);
+    $redis = new Redis();
+    $redis->connect("127.0.0.1");
 
-    include "mqtt_model.php";
-    $mqtt = new Mqtt($mysqli);
+    // 3) User sessions
+    require("Modules/user/user_model.php");
+    $user = new User($mysqli,$redis,null);
 
-    require "../feed/feed_model.php"; // 540
-    $feed = new Feed($mysqli);
+    require "Modules/feed/feed_model.php";
+    $feed = new Feed($mysqli,$redis,$timestore_adminkey);
 
-    require "../input/input_model.php"; // 295
-    $input = new Input($mysqli,$feed);
+    require "Modules/input/input_model.php";
+    $input = new Input($mysqli,$redis,$feed);
 
-    require "../input/process_model.php"; // 886
+    require "Modules/mqtt/mqtt_model.php";
+    $mqtt = new Mqtt($mysqli,$redis,$timestore_adminkey);
+
+    require "Modules/input/process_model.php";
     $process = new Process($mysqli,$input,$feed);
-    
+
     require "SAM/php_sam.php";
     
     $mqtt->running();
