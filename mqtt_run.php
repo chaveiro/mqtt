@@ -14,8 +14,8 @@
     define('EMONCMS_EXEC', 1);
     declare(ticks = 1);
 
-    pcntl_signal(SIGTERM, "signal_handler");
-    pcntl_signal(SIGINT, "signal_handler");
+    //pcntl_signal(SIGTERM, "signal_handler");
+    //pcntl_signal(SIGINT, "signal_handler");
   
     function signal_handler($signal) {
         switch($signal) {
@@ -36,22 +36,10 @@
     $fp = fopen("importlockmqtt", "w");
     if (! flock($fp, LOCK_EX | LOCK_NB)) { echo "Already running\n"; die; }
     
-    chdir(dirname(__FILE__));
+$basedir = str_replace("/Modules/mqtt","",dirname(__FILE__));
+  chdir($basedir);
     
-    class ProcessArg {
-        const VALUE = 0;
-        const INPUTID = 1;
-        const FEEDID = 2;
-    }
-    
-    class DataType {
-        const UNDEFINED = 0;
-        const REALTIME = 1;
-        const DAILY = 2;
-        const HISTOGRAM = 3;
-    }
-    
-    require "../../settings.php";
+    require "process_settings.php";
 
     $mysqli = new mysqli($server,$username,$password,$database);
 
