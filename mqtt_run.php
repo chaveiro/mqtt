@@ -29,9 +29,9 @@
                 print "Caught SIGINT\n";
                 exit;
         }
-    }  
+    }
   
-    error_reporting(E_ALL ^ (E_NOTICE | E_WARNING));    
+    error_reporting(E_ALL ^ (E_NOTICE | E_WARNING));
     
     $fp = fopen("importlockmqtt", "w");
     if (! flock($fp, LOCK_EX | LOCK_NB)) { echo "Already running\n"; die; }
@@ -44,7 +44,10 @@ $basedir = str_replace("/Modules/mqtt","",dirname(__FILE__));
     $mysqli = new mysqli($server,$username,$password,$database);
 
     $redis = new Redis();
-    $redis->connect("127.0.0.1");
+    
+    while (!$redis->connect($redis_server['host'], $redis_server['port'])) {
+        sleep(1);
+        $log->error("Could not connect to redis, retrying");
 
     // 3) User sessions
     require("Modules/user/user_model.php");
@@ -84,7 +87,7 @@ $basedir = str_replace("/Modules/mqtt","",dirname(__FILE__));
     $userid = $row['id'];
 
     $session = array();
-    $session['userid'] = $userid;    
+    $session['userid'] = $userid;
     
     $remotedomain = $settings['remotedomain'];
     $remoteapikey = $settings['remoteapikey'];
@@ -109,7 +112,7 @@ $basedir = str_replace("/Modules/mqtt","",dirname(__FILE__));
     $subUp = $conn->subscribe('topic://'.$mtopic) OR die('could not subscribe');
      
     $start = time();
-    $ni = 0; 
+    $ni = 0;
     $remotedata = "[";
     $start_time = time();
     $remotetimer = time();
@@ -131,7 +134,7 @@ $basedir = str_replace("/Modules/mqtt","",dirname(__FILE__));
             if ($settings['mhost'] !=$mhost) {$mhost = $settings['mhost']; echo $mhost;}
             
             if ($settings['remotedomain'] !=$remotedomain || $settings['remoteapikey'] !=$remoteapikey)
-            { 
+            {
               $result = file_get_contents("http://".$remotedomain."/user/timezone.json?apikey=".$remoteapikey);
               if ($result) {echo "Remote upload enabled - details correct \n"; $sent_to_remote = true; }
             }
@@ -148,7 +151,7 @@ $basedir = str_replace("/Modules/mqtt","",dirname(__FILE__));
             //echo $remotedata."\n";
             //echo "/input/bulk.json?apikey=".$remoteapikey."&data=".$remotedata;
             getcontent($remotedomain,80,"/input/bulk.json?apikey=".$remoteapikey."&data=".$remotedata);
-            $ni = 0; 
+            $ni = 0;
             $remotedata = "[";
             $start_time = time();
         }
@@ -213,7 +216,7 @@ function writetodb($nodeid,$sensor,$value,$timenow,$apikey, $user, $input, $proc
 
     if (!$result) {
         $id = $input->create_input($session['userid'], $nodeid, $sensor);
-    } else {				
+    } else {
         if ($result->record) $input->set_timevalue($result->id,$timenow,$value);
     }
 /*     echo $nodeid. " ".$sensor." ".$value." ".$timenow.PHP_EOL; */

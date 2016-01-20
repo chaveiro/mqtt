@@ -40,7 +40,7 @@ class Mqtt
   }
 
   public function running()
-  { 
+  {
     $time = time();
     $this->mysqli->query("UPDATE mqtt SET `running` = '$time' ");
   }
