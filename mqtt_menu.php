@@ -1,2 +1,2 @@
 <?php
-  $menu_dropdown[] = array('name'=>"MQTT", 'path'=>"mqtt/view" , 'session'=>"write", 'order' => -1 );
+  $menu_dropdown_config[] = array('name'=> dgettext($domain,"MQTT"), 'icon'=>'icon-tags','path'=>"mqtt/view" , 'session'=>"write", 'order' => 9 );
